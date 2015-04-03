@@ -419,7 +419,7 @@ public class INodeFile extends INodeWithAdditionalFields
       }
       max = maxInSnapshot > max ? maxInSnapshot : max;
     }
-    return isStriped()?
+    return isStriped() ?
         HdfsConstants.NUM_DATA_BLOCKS + HdfsConstants.NUM_PARITY_BLOCKS : max;
   }
 
@@ -840,7 +840,10 @@ public class INodeFile extends INodeWithAdditionalFields
    */
   public final long storagespaceConsumedWithStriped() {
     BlockInfo[] blockInfos = getBlocks();
-    long size = 0;
+    if (blockInfos == null || blockInfos.length == 0) {
+      return 0;
+    }
+    long size;
     final int last = blockInfos.length - 1;
     if (blockInfos[last] instanceof BlockInfoStripedUnderConstruction) {
       BlockInfoStripedUnderConstruction blockInfoStripedUC
@@ -1099,8 +1102,7 @@ public class INodeFile extends INodeWithAdditionalFields
    */
   @VisibleForTesting
   @Override
-  // TODO: move erasure coding policy to file XAttr
   public boolean isStriped() {
-    return getStoragePolicyID() == HdfsConstants.EC_STORAGE_POLICY_ID;
+    return getStripedBlocksFeature() != null;
   }
 }
